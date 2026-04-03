@@ -93,6 +93,18 @@ Because we are using Django's Session Authentication out of the box, testing in 
 *(To test other roles, log out from the admin site, create a user like `test-analyst` using your superuser account, login as the analyst instead, and verify the restricted permissions in the Swagger UI).*
 
 ---
+## Screenshots
+
+<img src="1.png" width="500" height="600">
+<img src="2.png" width="500" height="600">
+
+
+
+
+
+
+
+---
 
 ## 🔗 Main Endpoints
 
