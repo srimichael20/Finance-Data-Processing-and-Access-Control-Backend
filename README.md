@@ -110,3 +110,27 @@ Because we are using Django's Session Authentication out of the box, testing in 
 - `GET /api/dashboard/category-summary/`: Data aggregated by category.
 - `GET /api/dashboard/monthly-trends/`: Financial records truncated to monthly insights.
 - `GET /api/dashboard/recent/`: The last 10 transactions added to the system.
+
+---
+
+## 🤔 Technical Decisions and Trade-offs
+
+1. **Framework Choice (Django + DRF)**
+   - **Decision:** Selected Django and DRF instead of a lighter framework like FastAPI or Flask.
+   - **Trade-off:** Django has a heavier footprint and a slightly steeper learning curve for simple APIs. However, the trade-off is massively accelerated development speed—Django provides a built-in ORM, admin panel, and robust security practices out-of-the-box, which perfectly fits a highly relational, permission-heavy financial application.
+
+2. **Authentication Standard (Session vs. JWT)**
+   - **Decision:** Used native Django Session authentication instead of Stateless JWT tokens.
+   - **Trade-off:** Session auth uses stateful cookies. This isn't ideal if a native mobile app consumes the API or if the backend scales across multiple disparate servers. However, it avoids token expiration overhead, entirely eliminates token refresh setups, and allows seamless integration with the built-in Swagger UI and Django Admin.
+
+3. **Role-Based Access Control (Custom Field vs. Django Groups)**
+   - **Decision:** Implemented RBAC using a specific `role` string field on a Custom `User` model, enforced via custom DRF Permission classes (`IsAdminRole`, `IsAnalyst`, etc.).
+   - **Trade-off:** Alternatively, one could use Django's native `Group` and `Permissions` framework. While groups allow for granular, database-driven permission scaling, using a static `role` field prevents excessive database joins on every request and keeps the business logic incredibly simple and readable for the 3 rigid roles specified.
+
+4. **Dashboard Aggregation Logic (Database vs. Application Layer)**
+   - **Decision:** All dashboard calculations (totals, trends) are handled via Django ORM aggregate/annotate functions (`Sum`, `TruncMonth`).
+   - **Trade-off:** Aggregating data at the database level is highly performant and uses very minimal memory compared to pulling records into Python strings/loops. The trade-off is that direct database calculation can block transactions if the dataset grows to millions of rows. At hyper-scale, these queries would need to be moved to a cache (like Redis) or an asynchronous background task.
+
+5. **Database (SQLite)**
+   - **Decision:** Kept SQLite as the backend database.
+   - **Trade-off:** SQLite stores data in a simple file, making local setup frictionless and perfect for technical assignments/prototyping. The main trade-off is that it does not handle concurrent write operations well. For a true production deployment, switching to PostgreSQL by updating `settings.py` is recommended.
